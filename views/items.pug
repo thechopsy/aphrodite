@@ -1,0 +1,20 @@
+doctype html
+html
+  head
+    meta(charset="utf-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1")
+    link(rel="shortcut icon", href="/favicon.png")
+    link(rel="stylesheet", href="/assets/items.css")
+    title= `${ info.name.toLowerCase() } » aphrodite`
+  body
+    div.coverflow
+      each item in info.items
+        div.content(data-link= item.link, data-type= item.type)
+          div.info.duration
+            p!= `&nbsp;${ item.length }&nbsp;`
+          img(src= item.image)
+          div.info.title
+            p= item.title
+    script.
+      const APP = '!{ app }';
+    script(src="/assets/items.js")

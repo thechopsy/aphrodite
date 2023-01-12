@@ -1,0 +1,18 @@
+doctype html
+html
+  head
+    meta(charset="utf-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1")
+    link(rel="shortcut icon", href="/favicon.png")
+    link(rel="stylesheet", href="/assets/search.css")
+    title search » aphrodite
+  body
+    form#search
+      select(id= "site" name= "site")
+        each site in sites
+          option(value= `${ site.search }|${ site.domain }`)= site.name.toLowerCase()
+      input(id= "text" name= "text" type= "text" onfocus= "this.select()" autocomplete= "off" autofocus)
+      input(type= "submit" hidden)
+    script.
+      const APP = '!{ app }';
+    script(src="/assets/search.js")
