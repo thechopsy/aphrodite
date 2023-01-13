@@ -8,7 +8,7 @@ module.exports = {
     domain:  url(),
     search:  url('/search/[TERM]'),
 
-    items: ($) => {
+    items: ($, host) => {
         let html   = $('body').html();
         let match  = html.match(/src: "([^"]*)"/);
         let link   = match ? match[1] || '' : '';
@@ -16,11 +16,12 @@ module.exports = {
         let image  = video ? video.data('poster') : '';
         let title  = $('h5').text();
         let thumbs = $('.product-image');
+        let media  = `http://${ host }/video?url=${ encodeURIComponent(link) }`;
         let items  = [];
         let length = '';
 
         if (image && link) {
-            items.push({ title, image, link, length, type: 'media' });
+            items.push({ title, image, link: media, length, type: 'media' });
         }
 
         thumbs.each((i, e) => {

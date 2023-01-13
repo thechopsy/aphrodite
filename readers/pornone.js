@@ -8,7 +8,7 @@ module.exports = {
     domain:  url(),
     search:  url('/search/[TERM]'),
 
-    items: ($) => {
+    items: ($, host) => {
         let source = $('video source').first();
         let link   = source ? source.attr('src') : '';
         let video  = $('video').first();
@@ -16,10 +16,11 @@ module.exports = {
         let title  = $('h1').text();
         let thumbs = $('a.links');
         let length = '';
+        let media  = `http://${ host }/video?url=${ encodeURIComponent(link) }`;
         let items  = [];
 
         if (image && link) {
-            items.push({ title, image, link, length,type: 'media' });
+            items.push({ title, image, link: media, length,type: 'media' });
         }
 
         thumbs.each((i, e) => {
