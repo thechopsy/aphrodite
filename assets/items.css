@@ -3,7 +3,7 @@
     --content-sizing: 0.4;
     --content-width: calc(100vw * var(--content-sizing));
     --content-height: calc(var(--content-width) * 2 / 3);
-    --font-size: calc(4px + 100vh / 50);
+    --font-size: calc(100vw / 50);
 }
 
 html, body {
@@ -87,7 +87,7 @@ html, body {
 }
 
 .coverflow .content .info.title {
-    margin-top: 10px;
+    margin-top: 15px;
 }
 
 .coverflow .content .info p {
