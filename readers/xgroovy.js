@@ -1,5 +1,6 @@
 
-function url(path = '') { return `https://xgroovy.com${ path }` }
+function url(path) { return `https://xgroovy.com${ path || '' }` }
+function vid(url)  { return `/video?url=${ encodeURIComponent(url) }`}
 
 module.exports = {
 
@@ -19,7 +20,7 @@ module.exports = {
         let items  = [];
 
         if (image && link) {
-            items.push({ title, image, link, length, type: 'media' });
+            items.push({ title, image, link: vid(link), length, type: 'media' });
         }
 
         thumbs.each((i, e) => {
