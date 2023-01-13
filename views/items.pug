@@ -12,7 +12,8 @@ html
         div.content(data-link= item.link, data-type= item.type)
           div.info.duration
             p!= `&nbsp;${ item.length }&nbsp;`
-          img(src= item.image)
+          div.card
+            img(src= item.image)
           div.info.title
             p= item.title
     script.

@@ -5,6 +5,7 @@ const OVERLAP  =  10; // percentage of width
 const ROTATION =  45; // degrees
 const DELAY    = 250; // milliseconds - for various animations
 const SWIPE    =  75; // pixels - min swipe length
+const ANDROID  = APP === 'android';
 
 // --- globals
 
@@ -50,7 +51,7 @@ function action_play() {
     let url  = `/items?url=${ encodeURIComponent(link) }&app=${ APP }`;
 
     if (type === 'media') {
-        url = APP === 'android' ? `/android/play?uri=${ encodeURIComponent(link) }&offset=0&agent=` : link;
+        url = ANDROID ? `/android/play?uri=${ encodeURIComponent(link) }&offset=0&agent=` : link;
     }
 
     window.location.href = url;
@@ -158,9 +159,10 @@ function events() {
 // --- initialisation
 
 function init() {
+    document.documentElement.style.setProperty('--content-sizing', ANDROID ? '0.4' : '0.6');
 
     items.forEach((c, i) =>  {
-        if (APP !== 'android') c.onclick = () => { state('select', i) };
+        if (!ANDROID) c.onclick = () => { state('select', i) };
         c.style.zIndex = index === i ? 1 : 0;
     });
 

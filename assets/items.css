@@ -1,6 +1,7 @@
 
 :root {
-    --content-width: calc(100vw * 0.4);
+    --content-sizing: 0.4;
+    --content-width: calc(100vw * var(--content-sizing));
     --content-height: calc(var(--content-width) * 2 / 3);
     --font-size: calc(4px + 100vh / 50);
 }
@@ -34,7 +35,7 @@ html, body {
     outline: none;
 }
 
-.coverflow .content img {
+.coverflow .content .card img {
     vertical-align: middle;
     border-radius: 10px;
     border: 5px groove whitesmoke;
@@ -44,21 +45,26 @@ html, body {
     filter: grayscale(60%) brightness(80%);
 }
 
-.coverflow .content.media img {
+.coverflow .content.media .card img {
     border-color: red;
 }
 
-.coverflow .content.media.current::after {
+.coverflow .content.media.current .card {
+    position: relative;
+}
+
+.coverflow .content.media.current .card::after {
     content: "\25B6";
-    position: absolute;
-    top: 15%;
+    position:absolute;
+    top: 0;
     left: 0;
+    padding: 5px;
     width: var(--content-width);
     height: var(--content-height);
     line-height: var(--content-height);
     text-align: center;
     vertical-align: middle;
-    font-size: 8rem;
+    font-size: calc(var(--content-width) / 4);
     color: red;
     opacity: 0.5;
     z-index: 10;
