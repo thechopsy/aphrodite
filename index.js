@@ -27,7 +27,7 @@ app.router.get('/', (req, res) => {
 // --- items
 
 app.router.get('/items', (req, res) => {
-    Site.info(decodeURIComponent(req.query.url) || '').then(info => {
+    Site.info(req.headers.host, decodeURIComponent(req.query.url) || '').then(info => {
         res.render('items', { info, app: req.query.app || '' });
     });
 });
