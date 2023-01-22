@@ -1,7 +1,6 @@
 
 :root {
-    --content-width: 300px;
-    --xx: calc(100vw / 4.5);
+    --content-width: calc(100vw / 4.5);
     --content-height: calc(var(--content-width) * 0.6);
     --content-margin: 10px;
     --label-height: calc(var(--content-height) * 0.175);
