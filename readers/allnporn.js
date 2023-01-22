@@ -1,14 +1,14 @@
 
-function url(path = '') { return `https://pornone.com${ path }` }
+function url(path = '') { return `https://allnporn.com${ path }` }
 
 module.exports = {
 
     active:  true,
-    id:     'PN1',
-    name:   'Porn One',
+    id:     'ANP',
+    name:   'All N Porn',
     match:   url().split(/[\/\.]+/).slice(-2).join('.'),
     domain:  url(),
-    search:  url('/search/[TERM]'),
+    search:  url('/?s=[TERM]'),
 
     items: ($, host) => {
         let source = $('video source').first();
@@ -16,20 +16,20 @@ module.exports = {
         let video  = $('video').first();
         let image  = video ? video.attr('poster') : '';
         let title  = $('h1').text();
-        let thumbs = $('a.links');
+        let thumbs = $('article.thumb-block');
         let length = '';
         let media  = `http://${ host }/video?url=${ encodeURIComponent(link) }`;
         let items  = [];
 
         if (image && link) {
-            items.push({ title, image, link: media, length,type: 'media' });
+            items.push({ title, image, link: media, length, type: 'media' });
         }
 
         thumbs.each((i, e) => {
-            title  = $(e).find('img.imgvideo').first().attr('alt');
+            title  = $(e).find('img.display-img').first().attr('alt');
             link   = $(e).attr('href');
-            image  = $(e).find('img.imgvideo').first().attr('src');
-            length = $(e).find('.leading-4').first().text() || '';
+            image  = $(e).find('img.display-img').first().attr('src');
+            length = $(e).find('span.duration').first().text() || '';
 
             if (title && link && image) {
                 items.push({ title, image, length, type: 'link', link });

@@ -1,8 +1,8 @@
 
 html, body
 {
-    height: 100%;
-    width: 100%;
+    height: 100vh;
+    width: 100vw;
     padding: 0;
     margin: 0;
     overflow: hidden;
@@ -17,27 +17,14 @@ form
     left: 50%;
     width: 100%;
     text-align: center;
-    transform: translate(-49%, -49%);
-}
-
-form input,
-form select
-{
-    font-size: 1.8rem;
-    padding: 8px 10px;
-    border-radius: 0;
-    border: 1px solid grey;
+    transform: translate(-50%, -50%);
 }
 
 form input
 {
-    border-top-right-radius: 10px;
-    border-bottom-right-radius: 10px;
+    font-size: 1.8rem;
+    padding: 8px 10px;
+    border-radius: 10px;
+    border: 1px solid grey;
     outline: none;
-}
-
-form select
-{
-    border-top-left-radius: 10px;
-    border-bottom-left-radius: 10px;
 }

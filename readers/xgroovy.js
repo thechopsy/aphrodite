@@ -3,6 +3,8 @@ function url(path = '') { return `https://xgroovy.com${ path }` }
 
 module.exports = {
 
+    active:  true,
+    id:     'XGV',
     name:   'X Groovy',
     match:   url().split(/[\/\.]+/).slice(-2).join('.'),
     domain:  url(),

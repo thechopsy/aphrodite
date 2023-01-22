@@ -1,64 +1,67 @@
 
 :root {
-    --content-sizing: 0.4;
-    --content-width: calc(100vw * var(--content-sizing));
-    --content-height: calc(var(--content-width) * 2 / 3);
+    --content-width: 300px;
+    --xx: calc(100vw / 4.5);
+    --content-height: calc(var(--content-width) * 0.6);
+    --content-margin: 10px;
+    --label-height: calc(var(--content-height) * 0.175);
     --font-size: calc(100vw / 50);
 }
 
+* {
+    box-sizing: border-box;
+}
+
 html, body {
-    height: 100%;
-    width: 100%;
+    height: 100vh;
+    width: 100vw;
     padding: 0;
     margin: 0;
     overflow: hidden;
     background: radial-gradient(circle at center, #555 0%, #000 100%);
-    font-family: sans-serif;
-    text-align: center;
 }
 
-.coverflow {
-    height: 100%;
-    width: 100%;
+.lanes {
+    height: 100vw;
+    width: 100vw;
     perspective: 2000px;
 }
 
-.coverflow .content {
-    position: absolute;
-    top: calc(50% - var(--content-height) / 2 - 10%);
-    left: calc(50% - var(--content-width) / 2);
-    width: var(--content-width);
-    height: var(--content-height);
-    transform-style: preserve-3d;
-    transition: all 300ms ease-in-out;
-    border-radius: 10px;
-    outline: none;
+.lanes .lane {
+    height: calc(var(--content-height) + 2 * var(--content-margin) + var(--label-height));
+    min-width: 1000%;
+    text-align: left;
+    white-space: nowrap;
+    transition-property: transform;
 }
 
-.coverflow .content .card img {
-    vertical-align: middle;
-    border-radius: 10px;
-    border: 5px groove whitesmoke;
-    width: var(--content-width);
-    height: var(--content-height);
-    cursor: pointer;
-    filter: grayscale(60%) brightness(80%);
+.lanes .lane.current {
+    background-color: rgb(0,0,0,0.4);
 }
 
-.coverflow .content.media .card img {
+.lanes .lane .card {
+    float: left;
+    height: var(--content-height);
+    width: var(--content-width);
+    margin: var(--content-margin);
+    margin-right: 0;
+    border: 1px solid grey;
+}
+
+.lanes .lane .card.current {
+    border: 3px dotted white;
+}
+
+.lanes .lane.current .card.media {
+    position: relative;
     border-color: red;
 }
 
-.coverflow .content.media.current .card {
-    position: relative;
-}
-
-.coverflow .content.media.current .card::after {
+.lanes .lane.current .card.media::after {
     content: "\25B6";
     position:absolute;
     top: 0;
     left: 0;
-    padding: 5px;
     width: var(--content-width);
     height: var(--content-height);
     line-height: var(--content-height);
@@ -67,33 +70,73 @@ html, body {
     font-size: calc(var(--content-width) / 4);
     color: red;
     opacity: 0.5;
-    z-index: 10;
     pointer-events: none;
 }
 
-.coverflow .content.current img {
-    filter: grayscale(0%) brightness(100%);
+.lanes .lane .card img {
+    height: calc(var(--content-height) - 2px);
+    width: calc(var(--content-width) - 2px);
+    filter: grayscale(100%);
 }
 
-.coverflow .content .info {
-    display: flex;
-    font-size: var(--font-size);
-    width: 100%;
-    white-space: nowrap;
-    text-transform: uppercase;
-    outline: none;
-    justify-content: center;
+.lanes .lane .card.current img {
+    height: calc(var(--content-height) - 6px);
+    width: calc(var(--content-width) - 6px);
+}
+
+.lanes .lane .card p {
+    margin: 8px 2px;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: sans-serif;
+    font-size: calc(var(--content-width) / 21);
+    color: #555;
+}
+
+.lanes .lane.current .card p {
+    color:  #999;
+}
+
+.lanes .lane.current .card.current p {
     color: whitesmoke;
 }
 
-.coverflow .content .info.title {
-    margin-top: 15px;
+.lanes .lane.current .card img {
+    filter: grayscale(50%);
 }
 
-.coverflow .content .info p {
-    opacity: 0;
+.lanes .lane.current .card.current img {
+    filter: grayscale(0%);
 }
 
-.coverflow .content.current .info p {
-    opacity: 1;
+.lanes .lane .card .duration,
+.lanes .lane .card .site {
+    display: none;
+}
+
+.lanes .lane.current .card .duration,
+.lanes .lane.current .card.current .site {
+    position:relative;
+    display: block;
+    color: #222;
+    font-family: sans-serif;
+    opacity: 0.5;
+    font-size: calc(var(--content-width) / 21);
+    margin-top: calc(var(--content-height) / -2.25);
+    background: white;
+    width: fit-content;
+    padding: 4px 6px;
+
+}
+
+.lanes .lane.current .card .duration {
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.lanes .lane.current .card .site {
+    float: right;
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
 }

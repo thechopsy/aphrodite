@@ -1,173 +1,175 @@
 
+// --- gets a CSS variable value
+
+function getCssVar(name) {
+    return parseInt(getComputedStyle(document.documentElement).getPropertyValue(`--${ name }`));
+}
+
 // --- constants
 
-const OVERLAP  =  10; // percentage of width
-const ROTATION =  45; // degrees
-const DELAY    = 250; // milliseconds - for various animations
-const SWIPE    =  75; // pixels - min swipe length
-const ANDROID  = APP === 'android';
+const SPEED_SLOW   = 500; // ms
+const SPEED_FAST   = 100; // ms
+const WIDTH_CARD   = getCssVar('content-width');
+const WIDTH_MARGIN = getCssVar('content-margin');
+const WIDTH_TOTAL  = WIDTH_CARD + WIDTH_MARGIN;
+const KEY_PRESSES  = {
+    13: 'select',
+    37: 'left',
+    38: 'up',
+    39: 'right',
+    40: 'down',
+};
 
-// --- globals
+// --- running context
 
-var found = [ ...document.querySelectorAll('div.content') ];
-var index = Math.floor(found.length / 2);
-var items = [];
+let width = $(window).width();
+let lanes = $('.lanes .lane');
+let cards = null;
+let curr  = { lane: { idx: null }, card: { idx: null } };
+let moves = Promise.resolve();
+let depth = 0;
 
-found.forEach((e, i) => i % 2 ? items.unshift(e) : items.push(e)); // fan fold
+// --- loads a lane
 
-// --- move to previous item
-
-function action_prev() {
-    if (index) {
-        index--;
-        action_flow();
-    }
-}
-
-// --- move to next item
-
-function action_next() {
-    if (items.length > (index + 1)) {
-        index++;
-        action_flow();
-    }
-}
-
-// --- jump to specified item
-
-function action_goto(i) {
-    if (index !== i) {
-        index = i;
-        action_flow();
-    }
-}
-
-// --- plays an item
-
-function action_play() {
-    let curr = items[index];
-    let link = curr.getAttribute('data-link');
-    let type = curr.getAttribute('data-type');
-    let url  = `/items?url=${ encodeURIComponent(link) }&app=${ APP }`;
-
-    if (type === 'media') {
-        url = ANDROID ? `/android/play?uri=${ encodeURIComponent(link) }&offset=0&agent=` : link;
-    }
-
-    window.location.href = url;
-}
-
-// --- goto home
-
-function action_home() {
-    window.location.href = `/?app=${ APP }`;
-}
-
-// --- reflow the items
-
-function action_flow() {
-    items.forEach((c, i) =>  {
-        let transform = '';
-        let zindex    = '';
-        let offset    = c.clientWidth / OVERLAP;
-
-        if (i < index) {
-            transform = `translateX(-${ offset * (index - i) }%) rotateY(${ ROTATION }deg)`;
-            zindex    =  i;
+function load(params, cb) {
+    $.ajax({
+        type: 'GET',
+        url: `/lane`,
+        data: params,
+        dataType : 'html',
+        success : html => {
+            let lane = $(html);
+            if (lane.find('.card').length) cb(lane);
         }
-
-        else if (i === index) {
-            transform = 'rotateY(0deg) translateZ(140px)';
-            zindex    =  items.length;
-        }
-
-        else /* if (i > index) */ {
-            transform = `translateX(${ offset * (i - index) }%) rotateY(-${ ROTATION }deg)`;
-            zindex    =  items.length - i;
-        }
-
-        c.style.transform = transform;
-        c.style.zIndex    = zindex;
-
-        c.classList.remove('current');
-        c.classList.add(c.getAttribute('data-type'));
     });
-
-    if (items.length) setTimeout (() => { items[index].classList.add ('current') }, DELAY);
 }
 
-// --- state management
+// --- switch lane
 
-function state(event, context) {
+function lane(idx) {
+   if (curr.lane.idx != idx) {
+       if (curr.lane.ele) {
+           curr.lane.ele.attr('data-curr-card', curr.card.idx);
+           cards.removeClass('current');
+      }
 
-    if (event === 'left') {
-        action_prev();
+       curr.lane.idx = idx;
+       curr.lane.ele = $(lanes[idx]);
+       curr.card.idx = curr.lane.ele.attr('data-curr-card') || 0;
+
+       lanes.removeClass('current');
+       curr.lane.ele.addClass('current');
+       cards = curr.lane.ele.find('.card');
+
+       curr.lane.ele[0].scrollIntoView({behavior: "smooth", block: "end"});
+       card(curr.card.idx, true);
+   }
+}
+
+// --- switch card
+
+function card(idx, force = false) {
+    let delay = 0;
+
+    if (force || curr.card.idx !== idx) {
+        curr.card.idx = idx
+        curr.card.ele = $(cards[idx]);
+
+        cards.removeClass('current');
+        curr.card.ele.addClass('current');
+
+        let delta = 0;
+        let left  = curr.card.ele.offset().left;
+        let right = left + WIDTH_CARD;
+
+        if (right > width) {
+            delta = right - width + WIDTH_MARGIN;
+        }
+
+         if (left < 0) {
+            delta = left - WIDTH_MARGIN;
+        }
+
+        if (delta) {
+            let slide = parseInt(curr.lane.ele.css('transform').split(',')[4]) || 0;
+            let speed = depth === 1 ? SPEED_SLOW : SPEED_FAST;
+
+            delay = speed / WIDTH_TOTAL * Math.min(WIDTH_TOTAL, Math.abs(delta));
+
+            curr.lane.ele.css('transition-duration',  `${ delay }ms`);
+            curr.lane.ele.css('transform', `translateX(${ slide - delta }px)`);
+        }
     }
 
-    else if (event === 'right') {
-        action_next();
-    }
+    return delay;
+}
 
-    else if (event === 'select') {
-        context === index ?  action_play() : action_goto(context);
-    }
+// --- select a card
 
-    else if (event === 'submit') {
-        action_play();
-    }
+function select() {
+    let url = curr.card.ele.attr('data-link');
 
-    else if (event === 'home') {
-        action_home();
+    if (curr.card.ele.hasClass('media')) {
+        if (APP === 'android') url = `/android/play?uri=${ encodeURIComponent(url) }&offset=0&agent=`;
+        window.location.href = url;
     }
-
     else {
-        // do nothing here
+        load({ url: encodeURIComponent(url) }, loaded => {
+            loaded.insertAfter(curr.lane.ele);
+            lanes = $('.lanes .lane');
+            lane(curr.lane.idx + 1);
+        });
     }
 }
 
-// --- event management
+// --- process a move via a keypress
 
-function events() {
+function move(which) {
+    return new Promise(resolve => {
+        let delay = 0;
 
-    document.addEventListener('keydown', event => {
-        const EVENTS = {
-            ArrowLeft:  'left',
-            ArrowRight: 'right',
-            ArrowUp:    'home',
-            Enter:      'submit'
-        };
+        if (which === 'select') select();
+        if (which === 'right' ) delay = card(Math.min(curr.card.idx + 1, cards.length - 1));
+        if (which === 'left'  ) delay = card(Math.max(curr.card.idx - 1, 0));
+        if (which === 'down'  ) lane(Math.min(curr.lane.idx + 1, lanes.length - 1));
+        if (which === 'up'    ) lane(Math.max(curr.lane.idx - 1, 0));
 
-        state(EVENTS[event.key]);
+        setTimeout(() => { resolve() }, delay);
     });
-
-    let touched = 0
-
-    document.addEventListener('touchstart', event => {
-        touched = event.changedTouches[0].screenX;
-    });
-
-    document.addEventListener('touchend', event => {
-        let moved = touched - event.changedTouches[0].screenX;
-        if (Math.abs(moved) > SWIPE && moved < 0) state('left');
-        if (Math.abs(moved) > SWIPE && moved > 0) state('right');
-        if (Math.abs(moved) < SWIPE) state('submit');
-    });
-
-    addEventListener('resize', (event) => { action_flow() });
 }
 
-// --- initialisation
+// --- key press handler
+
+$(document).keydown(e => {
+    let which = KEY_PRESSES[e.keyCode];
+
+    if (which) {
+        depth++;
+        moves = moves.then(() => move(which)).then(() => depth--);
+    }
+});
+
+// --- initialise
 
 function init() {
-    document.documentElement.style.setProperty('--content-sizing', ANDROID ? '0.4' : '0.6');
-
-    items.forEach((c, i) =>  {
-        if (!ANDROID) c.onclick = () => { state('select', i) };
-        c.style.zIndex = index === i ? 1 : 0;
-    });
-
-    setTimeout (() => { action_flow() }, DELAY);
-    events();
+    SITES.forEach(s => load ({ site: s, text: SEED }, loaded => {
+        $('.lanes').append(loaded);
+        lanes = $('.lanes .lane');
+        if (cards === null) lane(0);
+    }));
 }
 
+// --- entry point
+
 init();
+
+/*
+
+TODO
+
+1. window resize
+2. position bug
+3. comments
+4. codepen
+
+*/

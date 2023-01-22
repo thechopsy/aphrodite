@@ -3,6 +3,8 @@ function url(path = '') { return `https://www.trannytube.net${ path }` }
 
 module.exports = {
 
+    active:  true,
+    id:     'TYT',
     name:   'Tranny Tube',
     match:   url().split(/[\/\.]+/).slice(-2).join('.'),
     domain:  url(),

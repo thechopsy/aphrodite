@@ -4,6 +4,8 @@ function img (style = '') { return style.replace("background-image: url('", '').
 
 module.exports = {
 
+    active:  true,
+    id:     'EKT',
     name:   'Efukt',
     match:   url().split(/[\/\.]+/).slice(-2).join('.'),
     domain:  url(),

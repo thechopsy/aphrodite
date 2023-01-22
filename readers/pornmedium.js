@@ -3,6 +3,8 @@ function url(path = '') { return `https://pornmedium.com${ path }` }
 
 module.exports = {
 
+    active:  true,
+    id:     'PNM',
     name:   'Porn Medium',
     match:   url().split(/[\/\.]+/).slice(-2).join('.'),
     domain:  url(),
