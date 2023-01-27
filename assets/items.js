@@ -56,13 +56,13 @@ function lane(idx) {
 
        curr.lane.idx = idx;
        curr.lane.ele = $(lanes[idx]);
-       curr.card.idx = curr.lane.ele.attr('data-curr-card') || 0;
+       curr.card.idx = parseInt(curr.lane.ele.attr('data-curr-card')) || 0;
 
        lanes.removeClass('current');
        curr.lane.ele.addClass('current');
        cards = curr.lane.ele.find('.card');
 
-       curr.lane.ele[0].scrollIntoView({behavior: "smooth", block: "end"});
+       curr.lane.ele[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
        card(curr.card.idx, true);
    }
 }
