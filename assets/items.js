@@ -1,18 +1,8 @@
 
-// --- gets a CSS variable value
-
-function getCssVar(name) {
-    return parseInt(getComputedStyle(document.documentElement).getPropertyValue(`--${ name }`));
-}
-
 // --- constants
 
-const SPEED_SLOW   = 500; // ms
-const SPEED_FAST   = 100; // ms
-const WIDTH_CARD   = getCssVar('content-width');
-const WIDTH_MARGIN = getCssVar('content-margin');
-const WIDTH_TOTAL  = WIDTH_CARD + WIDTH_MARGIN;
-const KEY_PRESSES  = {
+const SPEED = { SLOW: 500, FAST: 100 } // ms
+const KEYS  = {
     13: 'select',
     37: 'left',
     38: 'up',
@@ -22,12 +12,23 @@ const KEY_PRESSES  = {
 
 // --- running context
 
-let width = $(window).width();
 let lanes = $('.lanes .lane');
+let width = {};
 let cards = null;
 let curr  = { lane: { idx: null }, card: { idx: null } };
 let moves = Promise.resolve();
 let depth = 0;
+
+// --- resets the card and screen widths on start and resize
+
+function resize() {
+   if (curr.card.ele) {
+       width.screen = $(window).width();
+       width.card   = parseInt(curr.card.ele.css('width'));
+       width.margin = parseInt(curr.card.ele.css('margin-left'));
+       width.full   = width.card + width.margin;
+   }
+}
 
 // --- loads a lane
 
@@ -80,21 +81,21 @@ function card(idx, force = false) {
 
         let delta = 0;
         let left  = curr.card.ele.offset().left;
-        let right = left + WIDTH_CARD;
+        let right = left + width.card;
 
-        if (right > width) {
-            delta = right - width + WIDTH_MARGIN;
+        if (right > width.screen) {
+            delta = right - width.screen + width.margin;
         }
 
          if (left < 0) {
-            delta = left - WIDTH_MARGIN;
+            delta = left - width.margin;
         }
 
         if (delta) {
             let slide = parseInt(curr.lane.ele.css('transform').split(',')[4]) || 0;
-            let speed = depth === 1 ? SPEED_SLOW : SPEED_FAST;
+            let speed = depth === 1 ? SPEED.SLOW : SPEED.FAST;
 
-            delay = speed / WIDTH_TOTAL * Math.min(WIDTH_TOTAL, Math.abs(delta));
+            delay = speed / width.full * Math.min(width.full, Math.abs(delta));
 
             curr.lane.ele.css('transition-duration',  `${ delay }ms`);
             curr.lane.ele.css('transform', `translateX(${ slide - delta }px)`);
@@ -141,7 +142,7 @@ function move(which) {
 // --- key press handler
 
 $(document).keydown(e => {
-    let which = KEY_PRESSES[e.keyCode];
+    let which = KEYS[e.keyCode];
 
     if (which) {
         depth++;
@@ -152,10 +153,15 @@ $(document).keydown(e => {
 // --- initialise
 
 function init() {
+    onresize = (event) => { resize() };
+
     SITES.forEach(s => load ({ site: s, text: SEED }, loaded => {
         $('.lanes').append(loaded);
         lanes = $('.lanes .lane');
-        if (cards === null) lane(0);
+        if (lanes.length === 1) {  // first one loaded
+            lane(0);
+            resize();
+        }
     }));
 }
 
@@ -167,7 +173,6 @@ init();
 
 TODO
 
-1. window resize
 2. position bug
 3. comments
 4. codepen

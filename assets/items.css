@@ -89,7 +89,7 @@ html, body {
     overflow: hidden;
     text-overflow: ellipsis;
     font-family: sans-serif;
-    font-size: calc(var(--content-width) / 21);
+    font-size: calc(var(--content-width) / 20);
     color: #555;
 }
 
