@@ -2,12 +2,15 @@
 // --- constants
 
 const SPEED = { SLOW: 500, FAST: 100 } // ms
+const BUSY  = 5; // max action depth
 const KEYS  = {
-    13: 'select',
-    37: 'left',
-    38: 'up',
-    39: 'right',
-    40: 'down',
+    Enter      : 'select',
+    ArrowUp    : 'up',
+    ArrowDown  : 'down',
+    ArrowLeft  : 'left',
+    ArrowRight : 'right',
+    PageDown   : 'down',
+    PageUp     : 'up',
 };
 
 // --- running context
@@ -27,6 +30,12 @@ function resize() {
    }
 }
 
+// --- scroll into view the active lane
+
+function showlane() {
+    curr.lane.ele[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
 // --- loads a lane
 
 function load(params, cb) {
@@ -36,10 +45,28 @@ function load(params, cb) {
         data: params,
         dataType : 'html',
         success : html => {
-            let lane = $(html);
-            if (lane.find('.card').length) cb(lane);
+            let lane  = $(html);
+            let cards = lane.find('.card');
+
+            if (cards.length) {
+                cards.click(function() { clicked($(this)) });
+                cb(lane);
+            }
         }
     });
+}
+
+// --- when a card is selected
+
+function clicked(card) {
+    let idx = { lane: card.parent('.lane').index(), card: card.index() };
+
+    if (idx.lane === curr.lane.idx && idx.card === curr.card.idx) {
+        action('select');
+    }
+    else {
+        action('jump', idx);
+    }
 }
 
 // --- switch lane
@@ -59,7 +86,7 @@ function lane(idx) {
        curr.lane.ele.addClass('current');
        curr.card.all = curr.lane.ele.find('.card');
 
-       curr.lane.ele[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+       showlane();
        card(curr.card.idx, true);
    }
 }
@@ -72,21 +99,17 @@ function card(idx, force = false) {
     if (force || curr.card.idx !== idx) {
         curr.card.idx = idx
         curr.card.ele = $(curr.card.all[idx]);
-
         curr.card.all.removeClass('current');
         curr.card.ele.addClass('current');
+
+        showlane();
 
         let delta = 0;
         let left  = curr.card.ele.offset().left;
         let right = left + width.card;
 
-        if (right > width.screen) {
-            delta = right - width.screen + width.margin;
-        }
-
-         if (left < 0) {
-            delta = left - width.margin;
-        }
+        if (right > width.screen)  delta = right - width.screen + width.margin;
+        if (left  < 0)             delta = left  - width.margin;
 
         if (delta) {
             let slide = parseInt(curr.lane.ele.css('transform').split(',')[4]) || 0;
@@ -120,37 +143,37 @@ function select() {
     }
 }
 
-// --- process a move via a keypress
+// --- process a ui action
 
-function move(which) {
-    return new Promise(resolve => {
-        let delay = 0;
-
-        if (which === 'select') select();
-        if (which === 'right' ) delay = card(Math.min(curr.card.idx + 1, curr.card.all.length - 1));
-        if (which === 'left'  ) delay = card(Math.max(curr.card.idx - 1, 0));
-        if (which === 'down'  ) lane(Math.min(curr.lane.idx + 1, curr.lane.all.length - 1));
-        if (which === 'up'    ) lane(Math.max(curr.lane.idx - 1, 0));
-
-        setTimeout(() => { resolve() }, delay);
-    });
-}
-
-// --- key press handler
-
-$(document).keydown(e => {
-    let which = KEYS[e.keyCode];
-
-    if (which) {
+function action(which, context) {
+    if (which && moves.depth < BUSY) {
         moves.depth++;
-        moves.queue = moves.queue.then(() => move(which)).then(() => moves.depth--);
+        moves.queue = moves.queue.then(() => new Promise(resolve => {
+            let delay = 0;
+
+            if (which === 'select') select();
+            if (which === 'right' ) delay = card(Math.min(curr.card.idx + 1, curr.card.all.length - 1));
+            if (which === 'left'  ) delay = card(Math.max(curr.card.idx - 1, 0));
+            if (which === 'down'  ) lane(Math.min(curr.lane.idx + 1, curr.lane.all.length - 1));
+            if (which === 'up'    ) lane(Math.max(curr.lane.idx - 1, 0));
+            if (which === 'jump'  ) {
+                 lane(context.lane);
+                 delay = card(context.card)
+            }
+
+            setTimeout(() => { resolve() }, delay);
+        }))
+        .then(() => moves.depth--);
     }
-});
+}
 
 // --- initialise
 
 function init() {
-    onresize = (event) => { resize() };
+    $(window  ).on('resize'    , e => resize());
+    $(document).on('swiperight', e => action('right'))
+               .on('swipeleft' , e => action('left'))
+               .on('keydown'   , e => action(KEYS[e.key]));
 
     SITES.forEach(s => load ({ site: s, text: SEED }, loaded => {
         $('.lanes').append(loaded);
@@ -164,7 +187,7 @@ function init() {
 
 // --- entry point
 
-init();
+$(() => init());
 
 /*
 
