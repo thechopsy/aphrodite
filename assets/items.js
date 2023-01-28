@@ -12,12 +12,9 @@ const KEYS  = {
 
 // --- running context
 
-let lanes = $('.lanes .lane');
 let width = {};
-let cards = null;
 let curr  = { lane: { idx: null }, card: { idx: null } };
-let moves = Promise.resolve();
-let depth = 0;
+let moves = { queue: Promise.resolve(), depth: 0 };
 
 // --- resets the card and screen widths on start and resize
 
@@ -51,16 +48,16 @@ function lane(idx) {
    if (curr.lane.idx != idx) {
        if (curr.lane.ele) {
            curr.lane.ele.attr('data-curr-card', curr.card.idx);
-           cards.removeClass('current');
+           curr.card.all.removeClass('current');
       }
 
        curr.lane.idx = idx;
-       curr.lane.ele = $(lanes[idx]);
+       curr.lane.ele = $(curr.lane.all[idx]);
        curr.card.idx = parseInt(curr.lane.ele.attr('data-curr-card')) || 0;
 
-       lanes.removeClass('current');
+       curr.lane.all.removeClass('current');
        curr.lane.ele.addClass('current');
-       cards = curr.lane.ele.find('.card');
+       curr.card.all = curr.lane.ele.find('.card');
 
        curr.lane.ele[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
        card(curr.card.idx, true);
@@ -74,9 +71,9 @@ function card(idx, force = false) {
 
     if (force || curr.card.idx !== idx) {
         curr.card.idx = idx
-        curr.card.ele = $(cards[idx]);
+        curr.card.ele = $(curr.card.all[idx]);
 
-        cards.removeClass('current');
+        curr.card.all.removeClass('current');
         curr.card.ele.addClass('current');
 
         let delta = 0;
@@ -93,7 +90,7 @@ function card(idx, force = false) {
 
         if (delta) {
             let slide = parseInt(curr.lane.ele.css('transform').split(',')[4]) || 0;
-            let speed = depth === 1 ? SPEED.SLOW : SPEED.FAST;
+            let speed = moves.depth === 1 ? SPEED.SLOW : SPEED.FAST;
 
             delay = speed / width.full * Math.min(width.full, Math.abs(delta));
 
@@ -117,7 +114,7 @@ function select() {
     else {
         load({ url: encodeURIComponent(url) }, loaded => {
             loaded.insertAfter(curr.lane.ele);
-            lanes = $('.lanes .lane');
+            curr.lane.all = $('.lanes .lane');
             lane(curr.lane.idx + 1);
         });
     }
@@ -130,9 +127,9 @@ function move(which) {
         let delay = 0;
 
         if (which === 'select') select();
-        if (which === 'right' ) delay = card(Math.min(curr.card.idx + 1, cards.length - 1));
+        if (which === 'right' ) delay = card(Math.min(curr.card.idx + 1, curr.card.all.length - 1));
         if (which === 'left'  ) delay = card(Math.max(curr.card.idx - 1, 0));
-        if (which === 'down'  ) lane(Math.min(curr.lane.idx + 1, lanes.length - 1));
+        if (which === 'down'  ) lane(Math.min(curr.lane.idx + 1, curr.lane.all.length - 1));
         if (which === 'up'    ) lane(Math.max(curr.lane.idx - 1, 0));
 
         setTimeout(() => { resolve() }, delay);
@@ -145,8 +142,8 @@ $(document).keydown(e => {
     let which = KEYS[e.keyCode];
 
     if (which) {
-        depth++;
-        moves = moves.then(() => move(which)).then(() => depth--);
+        moves.depth++;
+        moves.queue = moves.queue.then(() => move(which)).then(() => moves.depth--);
     }
 });
 
@@ -157,8 +154,8 @@ function init() {
 
     SITES.forEach(s => load ({ site: s, text: SEED }, loaded => {
         $('.lanes').append(loaded);
-        lanes = $('.lanes .lane');
-        if (lanes.length === 1) {  // first one loaded
+        curr.lane.all = $('.lanes .lane');
+        if (curr.lane.all.length === 1) {  // first one loaded
             lane(0);
             resize();
         }
@@ -173,7 +170,6 @@ init();
 
 TODO
 
-2. position bug
 3. comments
 4. codepen
 
