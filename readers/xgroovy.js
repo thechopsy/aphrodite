@@ -13,8 +13,7 @@ module.exports = {
     items: ($, host) => {
         let source = $('video source').first();
         let link   = source ? source.attr('src') : '';
-        let video  = $('video').first();
-        let image  = video ? video.attr('poster') : '';
+        let image  = $('meta[property="og:image"]').attr('content')
         let title  = $('h1').text();
         let thumbs = $('.item');
         let length = $('.badge.duration').text() || '';
