@@ -4,7 +4,7 @@ document.getElementById('search').onsubmit = () => {
     let url  = `/items?seed=${ text }&app=${ APP }`;
 
     if (text.startsWith('@')) {
-        url = `/assets/${ text.replace('@', '') }.html`;
+        url = `/assets/${ text.replace('@', '') }.html?app=${ APP }`;
     }
 
     window.location.href = url;
