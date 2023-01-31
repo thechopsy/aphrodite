@@ -26,9 +26,9 @@ module.exports = {
         }
 
         thumbs.each((i, e) => {
-            title  = $(e).find('img.display-img').first().attr('alt');
-            link   = $(e).attr('href');
-            image  = $(e).find('img.display-img').first().attr('src');
+            title  = $(e).find('img').first().attr('alt');
+            link   = $(e).find('a').first().attr('href');
+            image  = $(e).find('img').first().attr('data-src');
             length = $(e).find('span.duration').first().text() || '';
 
             if (title && link && image) {
