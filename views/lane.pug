@@ -1,9 +1,10 @@
 div.lane
-  each item in info.items
-    if item && item.link && item.image && item.title
-      div.card(data-link= item.link, class= item.type)
-        img(src= item.image)
-        p= item.title
-        div.site= info.id
-        if item.length
-          div.duration= item.length
+  if info.items
+    each item in info.items
+      if item && item.link && item.image && item.title
+        div.card(data-link= item.link, class= item.type)
+          img(src= item.image)
+          p= item.title
+          div.site= info.id
+          if item.length
+            div.duration= item.length
