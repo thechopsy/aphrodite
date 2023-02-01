@@ -4,7 +4,6 @@
     --content-height: calc(var(--content-width) * 0.6);
     --content-margin: 10px;
     --label-height: calc(var(--content-height) * 0.175);
-    --font-size: calc(100vw / 50);
 }
 
 * {
@@ -27,7 +26,7 @@ html, body {
 }
 
 .lanes .lane {
-    height: calc(var(--content-height) + 2 * var(--content-margin) + var(--label-height));
+    height: calc(var(--content-height) + var(--content-margin) + var(--content-margin) + var(--label-height));
     min-width: 1000%;
     text-align: left;
     white-space: nowrap;

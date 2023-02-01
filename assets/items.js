@@ -1,8 +1,9 @@
 
 // --- constants
 
+const TVAPP = APP === 'android'; // when running on devices sich as Andriod WebView on a TV
 const SPEED = { SLOW: 500, FAST: 100 } // ms
-const BUSY  = 5; // max action depth
+const BUSY  = 8; // max action depth
 const KEYS  = {
     Enter      : 'select',
     ArrowUp    : 'up',
@@ -30,13 +31,15 @@ function resize() {
    }
 }
 
-// --- scroll into view the active lane
+// --- scroll the active lane into view
 
 function showlane() {
-    curr.lane.ele[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (curr.card.ele) {
+        curr.lane.ele[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
 }
 
-// --- loads a lane
+// --- loads a lane from a webserver
 
 function load(params, cb) {
     $.ajax({
@@ -56,16 +59,19 @@ function load(params, cb) {
     });
 }
 
-// --- when a card is selected
+// --- when a card is selected - not used in tv apps
 
 function clicked(card) {
-    let idx = { lane: card.parent('.lane').index(), card: card.index() };
+    if (!TVAPP) {
+        let idx = { lane: card.parent('.lane').index(), card: card.index() };
+        let dbl = (idx.lane === curr.lane.idx && idx.card === curr.card.idx);  // clicked on the current card
 
-    if (idx.lane === curr.lane.idx && idx.card === curr.card.idx) {
-        action('select');
-    }
-    else {
-        action('jump', idx);
+        if (dbl) {
+            action('select');
+        }
+        else {
+            action('jump', idx);  // clicked the current card
+        }
     }
 }
 
@@ -131,7 +137,7 @@ function select() {
     let url = curr.card.ele.attr('data-link');
 
     if (curr.card.ele.hasClass('media')) {
-        if (APP === 'android') url = `/android/play?uri=${ encodeURIComponent(url) }&offset=0&agent=`;
+        if (TVAPP) url = `/android/play?uri=${ encodeURIComponent(url) }&offset=0&agent=`;
         window.location.href = url;
     }
     else {
@@ -161,7 +167,7 @@ function action(which, context) {
                  delay = card(context.card)
             }
 
-            setTimeout(() => { resolve() }, delay);
+            setTimeout(() => { resolve() }, delay); // next step after current animation
         }))
         .then(() => moves.depth--);
     }
@@ -172,8 +178,19 @@ function action(which, context) {
 function init() {
     $(window  ).on('resize'    , e => resize());
     $(document).on('swiperight', e => action('right'))
-               .on('swipeleft' , e => action('left'))
-               .on('keydown'   , e => action(KEYS[e.key]));
+               .on('swipeleft' , e => action('left'));
+
+    // --- key down handler
+
+    $(document).on('keydown', e => {
+        let which = KEYS[e.key];
+        if (which) {
+            action(which);
+            e.preventDefault();
+        }
+    });
+
+    // --- load lanes
 
     SITES.forEach(s => load ({ site: s, text: SEED }, loaded => {
         $('.lanes').append(loaded);
