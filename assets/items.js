@@ -205,12 +205,3 @@ function init() {
 // --- entry point
 
 $(() => init());
-
-/*
-
-TODO
-
-3. comments
-4. codepen
-
-*/
