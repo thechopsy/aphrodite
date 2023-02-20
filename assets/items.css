@@ -50,6 +50,16 @@ html, body {
     border: 3px solid yellow;
 }
 
+@keyframes loading {
+      0% { transform: scale(1.00); }
+     50% { transform: scale(1.05); }
+    100% { transform: scale(1.00); }
+}
+
+.lanes .lane .card.loading {
+     animation: loading 1s ease-in-out infinite;
+}
+
 .lanes .lane.current .card.media {
     position: relative;
     border-color: red;

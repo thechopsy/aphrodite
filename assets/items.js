@@ -1,6 +1,7 @@
 
 // --- constants
 
+const TMOUT = 5000; // ms
 const TVAPP = APP === 'android'; // when running on devices sich as Andriod WebView on a TV
 const SPEED = { SLOW: 500, FAST: 100 } // ms
 const BUSY  = 8; // max action depth
@@ -47,6 +48,7 @@ function load(params, cb) {
         url: `/lane`,
         data: params,
         dataType : 'html',
+        timeout: TMOUT,
         success : html => {
             let lane  = $(html);
             let cards = lane.find('.card');
@@ -141,7 +143,11 @@ function select() {
         window.location.href = url;
     }
     else {
+        curr.card.ele.addClass('loading');
+        setTimeout(() => { curr.card.ele.removeClass('loading') }, TMOUT);
+
         load({ url: encodeURIComponent(url) }, loaded => {
+            curr.card.ele.removeClass('loading');
             loaded.insertAfter(curr.lane.ele);
             curr.lane.all = $('.lanes .lane');
             lane(curr.lane.idx + 1);
