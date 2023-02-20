@@ -31,7 +31,7 @@ module.exports = {
             image  = $(e).find('img').first().attr('data-src');
             length = $(e).find('span.duration').first().text() || '';
 
-            if (title && link && image) {
+            if (title && link && image && link.includes('allnporn')) {
                 items.push({ title, image, length, type: 'link', link });
             }
         });
