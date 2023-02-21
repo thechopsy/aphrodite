@@ -136,18 +136,19 @@ function card(idx, force = false) {
 // --- select a card
 
 function select() {
-    let url = curr.card.ele.attr('data-link');
+    let sel = curr.card.ele;
+    let url = sel.attr('data-link');
 
-    if (curr.card.ele.hasClass('media')) {
+    if (sel.hasClass('media')) {
         if (TVAPP) url = `/android/play?uri=${ encodeURIComponent(url) }&offset=0&agent=`;
         window.location.href = url;
     }
     else {
-        curr.card.ele.addClass('loading');
-        setTimeout(() => { curr.card.ele.removeClass('loading') }, TMOUT);
+        sel.addClass('loading');
+        setTimeout(() => { sel.removeClass('loading') }, TMOUT);
 
         load({ url: encodeURIComponent(url) }, loaded => {
-            curr.card.ele.removeClass('loading');
+            sel.removeClass('loading');
             loaded.insertAfter(curr.lane.ele);
             curr.lane.all = $('.lanes .lane');
             lane(curr.lane.idx + 1);
